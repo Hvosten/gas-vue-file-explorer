@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css"
+      rel="stylesheet"
+    />
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.1.12/dist/vuetify.min.css" rel="stylesheet"/>
+  </head>
+  <body>
+    
+
+
+  <div id="app">
+    <v-app>
+      <v-app-bar>
+        <v-select
+          :items="Object.keys(mimeTypes)"
+          :disabled="files.length === 0" 
+          v-model="fileTypeSelected"
+          multiple
+          class="ma-2 pa-2"
+        ></v-select>
+      </v-app-bar>
+
+
+      <v-main v-if="files.length !== 0">
+          <p v-if="currPageFiles.length === 0">No files found</p>
+          <p v-else>YOUR {{ fileTypeSelected }} FILES</p>
+          <file-info class="pa-1 ma-1" v-for="file in currPageFiles" :file="file" :mime="mimeTypes[file.mime]"></file-info>
+          <v-pagination
+            v-model="page"
+            :length="numOfPages"
+            total-visible="1"
+            color="purple"
+          ></v-pagination>
+      </v-main>
+      
+    
+
+    </v-app>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@3.1.12/dist/vuetify.min.js"></script>
+  <script>
+    const CONFIG = {
+      ITEMS_PER_PAGE: 20
+    };
+
+    const app = Vue.createApp({
+      data() {
+        return {
+          files: [],
+          filesToShow: [],
+          currPageFiles: [],
+          fileTypeSelected: [],
+          page: 1,
+          numOfPages: 1,
+          mimeTypes: {
+          'audio': {color: 'pink-lighten-2', icon: 'mdi-audio-video'},
+          'document': {color: 'light-blue-darken-1', icon: 'mdi-file-document-outline'},
+          'drive-sdk': {color: 'deep-purple-darken-2', icon: 'mdi-google-drive'},
+          'drawing': {color: 'red-lighten-1', icon: 'mdi-drawing'},
+          'file': {color: 'teal-lighten-1', icon: 'mdi-file'},
+          'folder': {color: 'yellow-darken-3', icon: 'mdi-folder'},
+          'form': {color: 'deep-purple-lighten-1', icon: 'mdi-form-select'},
+          'fusiontable': {color: 'light-green-lighten-2', icon: 'mdi-table'},
+          'jam': {color: 'lime-darken-2', icon: 'mdi-ninja'}, 
+          'map': {color: 'green-accent-3', icon: 'mdi-map'},
+          'photo': {color: 'orange-lighten-1', icon: 'mdi-image'},
+          'presentation': {color: 'brown-lighten-2', icon: 'mdi-presentation'},
+          'script': {color: 'light-blue-darken-4', icon: 'mdi-script'},
+          'shortcut': {color: 'grey-darken-2', icon: 'mdi-content-cut'},
+          'site': {color: 'brown-darken-1', icon: 'mdi-sitemap'},
+          'spreadsheet': {color: 'green-darken-1', icon: 'mdi-google-spreadsheet'},
+          'unknown': {color: 'black', icon: 'mdi-battery-unknown'},	
+          'video': {color: 'blue-grey-darken-3', icon: 'mdi-video'},
+          'other': {color: 'pink-lighten-2', icon: 'mdi-file-document-alert-outline'}
+          }
+        }
+      },
+      watch: {
+        fileTypeSelected(mimeValues){
+          this.page = 1;
+          this.filesToShow = this.files.filter(file => mimeValues.includes(file.mime));
+          this.numOfPages = Math.ceil(this.filesToShow.length / CONFIG.ITEMS_PER_PAGE);
+          this.currPageFiles = this.filesToShow.slice(0, CONFIG.ITEMS_PER_PAGE);
+        },
+        page(newPage){
+          this.currPageFiles = this.filesToShow.slice(CONFIG.ITEMS_PER_PAGE * (newPage - 1), CONFIG.ITEMS_PER_PAGE * newPage);
+        }
+      },
+      methods: {
+        loadFiles(files){
+          this.files = this.filesToShow = JSON.parse(files);
+          this.numOfPages = Math.ceil(this.files.length / CONFIG.ITEMS_PER_PAGE);
+          this.currPageFiles = this.filesToShow.slice(0, CONFIG.ITEMS_PER_PAGE);
+        }
+      },
+      created(){
+      },
+      mounted(){
+        google.script.run.withSuccessHandler(this.loadFiles).getFiles();
+        //buildSelect();
+      }
+    });
+    
+    
+    app.component('file-info', {
+      props: ['file', 'mime'],
+      computed: {
+        compColor(){
+          return this.mime ? this.mime.color : 'pink-lighten-2';
+        },
+        compIcon(){
+          return this.mime ? this.mime.icon : 'mdi-file-document-alert-outline'
+        }
+      },
+      data() {
+        return {
+          showDetails: false,
+        }
+      },
+      template: `
+      <v-card color="white">
+      
+        <v-card-actions>
+          <v-chip
+            :color="compColor"
+            variant="outlined"
+            :href="file.alternateLink"
+            target="_blank"
+          >
+            {{ file.title }}
+          </v-chip>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            :icon="compIcon"
+            @click="showDetails = !showDetails"
+            :color="compColor"
+          ></v-btn>
+        </v-card-actions>
+
+        <v-expand-transition>
+          <div v-show="showDetails">
+            <v-divider></v-divider>
+
+            <v-card-text>
+              {{ file.createdDate }}
+            </v-card-text>
+          </div>
+        </v-expand-transition>
+      </v-card>`
+        
+    })
+
+    const vuetify = Vuetify.createVuetify()
+    app.use(vuetify);
+    app.mount('#app')
+  </script>
+
+  </body>
+</html>

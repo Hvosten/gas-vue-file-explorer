@@ -24,7 +24,6 @@ function getFiles() {
     fields: "nextPageToken,items(id,title,mimeType,createdDate,alternateLink)",
     q: "trashed = false",
   });
-  //console.log(items)
   items.forEach(
     (item) => (item["mime"] = item.mimeType.split(".")[2] ?? "other")
   );

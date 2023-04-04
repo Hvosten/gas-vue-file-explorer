@@ -17,29 +17,40 @@ function showSidebar() {
 function getFiles() {
   const cache = CacheService.getUserCache();
   const cached = cache.get(CACHE_SERVICE_KEY);
-  if (cached != null) return cached;
+  //if (cached != null) return cached;
 
-  const { items, nextPageToken } = Drive.Files.list({
-    maxResults: 100,
-    fields: "nextPageToken,items(id,title,mimeType,createdDate,alternateLink)",
-    q: "trashed = false",
-  });
-  items.forEach(
-    (item) => (item["mime"] = item.mimeType.split(".")[2] ?? "other")
-  );
+  const allFiles = [];
+  let pageToken;
 
-  const itemsJSON = JSON.stringify(items);
-  cache.put(CACHE_SERVICE_KEY, itemsJSON, 1500); // cache for 25 minutes
+  do{
+    const { items, nextPageToken } = Drive.Files.list({
+      maxResults: 300,
+      fields: "nextPageToken,items(id,title,mimeType,createdDate,modifiedDate,alternateLink,ownedByMe,owners(emailAddress))",
+      q: "trashed = false",
+      pageToken
+    });
 
-  console.log(items.length);
-  return itemsJSON;
+    items.forEach(
+      item => (item["mime"] = item.mimeType.split(".")[2] ?? "other")
+    );
+    console.log(items.length);
+    allFiles.push(...items);
+    pageToken = nextPageToken;
+  } while(pageToken);
+
+  console.log(allFiles)
+  const filesJSON = JSON.stringify(allFiles);
+  //cache.put(CACHE_SERVICE_KEY, filesJSON, 1500); // cache for 25 minutes
+
+  return filesJSON;
 }
 
 function listCalendars() {
   let pageToken;
   do {
+    console.log(pageToken)
     calendars = Drive.Files.list({
-      maxResults: 600,
+      maxResults: 100,
       pageToken: pageToken,
     });
     if (!calendars.items || calendars.items.length === 0) {
@@ -48,7 +59,8 @@ function listCalendars() {
     }
     // Print the calendar id and calendar summary
     pageToken = calendars.nextPageToken;
-    console.log(calendars.items, pageToken);
+    console.log(calendars.incompleteSearch);
+    console.log(calendars.items.length);
   } while (pageToken);
 }
 

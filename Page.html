@@ -22,7 +22,7 @@
 
       <v-main v-if="files.length !== 0">
         <p v-if="currPageFiles.length === 0">No files found</p>
-        <p v-else>YOUR {{ fileTypeSelected }} FILES</p>
+        <p v-else>Showing {{ fileTypeSelected }} files</p>
         <file-info class="pa-1 ma-1" v-for="file in currPageFiles" :file="file"
           :mime="mimeTypes[file.mime]"></file-info>
         <v-pagination v-model="page" :length="numOfPages" total-visible="1" color="purple"></v-pagination>
@@ -147,8 +147,8 @@
             <v-card-text>
               <v-list>
                 <file-details type="Created" :detail="file.createdDate"></file-details>
-                <file-details type="Created" :detail="file.createdDate"></file-details>
-                <file-details type="Created" :detail="file.createdDate"></file-details>
+                <file-details type="Modified" :detail="file.modifiedDate"></file-details>
+                <file-details type="Owner" :detail="file.owners[0]['emailAddress']"></file-details>
               </v-list>
                    
             </v-card-text>

@@ -10,25 +10,29 @@
 
 <body>
 
-
-
-  <div id="app">
+  <div id="app" class="h-100">
     <v-app>
       <v-app-bar>
         <v-select :items="Object.keys(mimeTypes)" :disabled="files.length === 0" v-model="fileTypeSelected" multiple
           class="ma-2 pa-2"></v-select>
       </v-app-bar>
 
-
-      <v-main v-if="files.length !== 0">
-        <p v-if="currPageFiles.length === 0">No files found</p>
-        <p v-else>Showing {{ fileTypeSelected }} files</p>
-        <file-info class="pa-1 ma-1" v-for="file in currPageFiles" :file="file"
-          :mime="mimeTypes[file.mime]"></file-info>
-        <v-pagination v-model="page" :length="numOfPages" total-visible="1" color="purple"></v-pagination>
+      <v-main>
+        <div class="d-flex align-center justify-center h-75" v-if="loading">
+          <v-progress-circular
+            indeterminate
+            color="teal"
+            size="150"
+            width="5"
+          >Loading files...</v-progress-circular>
+        </div>
+        <div v-else>
+          <p v-if="currPageFiles.length === 0">No files found</p>
+          <p v-else>Showing {{ fileTypeSelected }} files</p>
+          <file-info class="ma-1" v-for="file in currPageFiles" :file="file" :mime="mimeTypes[file.mime]"></file-info>
+          <v-pagination v-model="page" :length="numOfPages" total-visible="1" color="purple"></v-pagination>
+        </div>
       </v-main>
-
-
 
     </v-app>
   </div>
@@ -43,6 +47,7 @@
     const app = Vue.createApp({
       data() {
         return {
+          loading: true,
           files: [],
           filesToShow: [],
           currPageFiles: [],
@@ -88,6 +93,7 @@
           this.files = this.filesToShow = JSON.parse(files);
           this.numOfPages = Math.ceil(this.files.length / CONFIG.ITEMS_PER_PAGE);
           this.currPageFiles = this.filesToShow.slice(0, CONFIG.ITEMS_PER_PAGE);
+          this.loading = false;
         }
       },
       created() {

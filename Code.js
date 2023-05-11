@@ -1,7 +1,7 @@
 function onOpen() {
   SpreadsheetApp.getUi() // Or DocumentApp or SlidesApp or FormApp.
-    .createMenu("Custom Menu")
-    .addItem("Show sidebar", "showSidebar")
+    .createMenu("Script")
+    .addItem("Show file explorer", "showSidebar")
     .addToUi();
 }
 

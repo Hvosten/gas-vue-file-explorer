@@ -28,7 +28,7 @@
         </div>
         <div v-else>
           <p v-if="currPageFiles.length === 0">No files found</p>
-          <p v-else>Showing {{ fileTypeSelected }} files</p>
+          <!-- <p v-else>Showing {{ fileTypeSelected }} files</p> -->
           <file-info class="ma-1" v-for="file in currPageFiles" :file="file" :mime="mimeTypes[file.mime]"></file-info>
           <v-pagination v-model="page" :length="numOfPages" total-visible="1" color="purple"></v-pagination>
         </div>
